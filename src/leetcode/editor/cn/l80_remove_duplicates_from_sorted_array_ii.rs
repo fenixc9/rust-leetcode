@@ -69,20 +69,21 @@ struct Solution;
 1 2 3 4 3 3 5 6
 
 
-*/
+ */
 impl Solution {
     pub fn remove_duplicates(nums: &mut Vec<i32>) -> i32 {
-        let fast = 1;
-        let slow = 0;
-        while fast < nums.len() {
-
-        }
-
-        unimplemented!()
+        Self::process(nums, 2)
     }
 
-    fn swap(nums: &mut Vec<i32>, a: usize, b: usize) {
-        nums.swap(a, b);
+    fn process(nums: &mut [i32], k: i32) -> i32 {
+        let mut idx = 0;
+        for x in 0..nums.len() {
+            if idx < k || &nums[(idx - k) as usize] != &nums[x] {
+                nums[idx as usize] = nums[x];
+                idx += 1;
+            }
+        }
+        return idx;
     }
 }
 //leetcode submit region end(Prohibit modification and deletion)

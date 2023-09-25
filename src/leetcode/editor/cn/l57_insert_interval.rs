@@ -62,39 +62,6 @@ struct Solution;
 use std::cmp::{max, min};
 
 impl Solution {
-    pub fn insert0(intervals: Vec<Vec<i32>>, new_interval: Vec<i32>) -> Vec<Vec<i32>> {
-        if intervals.len() == 0 { return vec![new_interval]; }
-        let mut r = vec![];
-        let mut new_left = -1;
-        let mut new_right = -1;
-        let mut finish = false;
-        let mut last = vec![];
-        for (i, v) in intervals.into_iter().enumerate() {
-            if finish {
-                r.push(v.clone());
-            } else if v[1] < new_interval[0] {
-                r.push(v.clone());
-            } else if new_left == -1 {
-                new_left = min(v[0], new_interval[0]);
-                new_right = max(v[1], new_interval[1]);
-            } else if v[0] > new_right {
-                r.push(vec![new_left, new_right]);
-                r.push(vec![v[0], v[1]]);
-                finish = true;
-            } else {
-                new_right = max(new_right, v[1]);
-            }
-            last = v.clone();
-        }
-        if !finish && new_left != -1 {
-            r.push(vec![new_left, new_right])
-        }
-        if !finish && new_left == -1 {
-            r.push(new_interval);
-        }
-        r
-    }
-
     pub fn insert(intervals: Vec<Vec<i32>>, new_interval: Vec<i32>) -> Vec<Vec<i32>> {
         let mut res = vec![];
         let mut index = 0;
@@ -116,7 +83,6 @@ impl Solution {
             index+=1;
         }
         return res;
-        // unimplemented!()
     }
 }
 //leetcode submit region end(Prohibit modification and deletion)
