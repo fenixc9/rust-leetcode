@@ -66,6 +66,7 @@ struct Solution;
 
 //leetcode submit region begin(Prohibit modification and deletion)
 impl Solution {
+    #[allow(dead_code)]
     pub fn remove_duplicates0(nums: &mut Vec<i32>) -> i32 {
         let mut j = 0;
         // for (i, v) in nums.iter_mut().enumerate() {

@@ -61,11 +61,6 @@ impl Solution {
     }
 }
 
-#[inline]
-fn get(m: &[i32], key: i32) -> i32 {
-    m[key as usize]
-}
-
 //leetcode submit region end(Prohibit modification and deletion)
 #[test]
 fn f1() {
