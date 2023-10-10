@@ -12,12 +12,8 @@ fn sort0<T: PartialOrd>(arr: &mut [T], start: i32, end: i32) {
     let mut r = end;
     let base = l;
     while l < r {
-        while l < r && arr[base as usize] <= arr[r as usize] {
-            r -= 1;
-        }
-        while l < r && arr[base as usize] >= arr[l as usize] {
-            l += 1;
-        }
+        while l < r && arr[base as usize] <= arr[r as usize] { r -= 1; }
+        while l < r && arr[base as usize] >= arr[l as usize] { l += 1; }
         swap(arr, l, r);
     }
     swap(arr, l, start);

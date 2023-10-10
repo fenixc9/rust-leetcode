@@ -13,3 +13,4 @@ mod L36_valid_sudoku;
 // mod l71_simplify_path;
 // mod l85_maximal_rectangle;
 mod l90_subsets_ii;
+mod l2578_split_with_minimum_sum;

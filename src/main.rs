@@ -1,4 +1,6 @@
 #![feature(let_chains)]
+#![feature(portable_simd)]
+// #![feature(portable_simd)]
 
 use std::collections::VecDeque;
 
