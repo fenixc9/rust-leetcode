@@ -8,6 +8,7 @@ struct Heap<T>
     size: usize,
 }
 
+#[allow(dead_code)]
 impl<T> Heap<T>
     where
         T: Ord,
@@ -27,6 +28,12 @@ impl<T> Heap<T>
         while index > 0 && self.inner[parent(index)] < self.inner[index] {
             self.swap(index, parent(index));
             index = parent(index);
+        }
+    }
+
+    fn peek(&self) -> Option<&T> {
+        if self.size == 0 { None } else {
+            Some(&self.inner[0])
         }
     }
 
