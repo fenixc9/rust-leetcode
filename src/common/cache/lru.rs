@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::mem::take;
 use std::ptr::null_mut;
-
 
 struct Entry<K, V> {
     pre: *mut Entry<K, V>,
@@ -12,20 +10,39 @@ struct Entry<K, V> {
     v: V,
 }
 
-impl<K, V> Entry<K, V> {
-    fn new() {}
-}
 
-struct LruCache<K, V> {
+struct LruCache<K, V>
+where
+    K: Hash + Eq + Copy,
+{
     data: HashMap<K, *mut Entry<K, V>>,
     head: *mut Entry<K, V>,
     tail: *mut Entry<K, V>,
     cap: usize,
 }
 
+impl<K, V> Drop for LruCache<K, V>
+where
+    K: Hash + Eq + Copy,
+{
+    fn drop(&mut self) {
+        let mut cur = self.head;
+        unsafe {
+            while !cur.is_null() {
+                self.data.remove(&(*cur).k);
+                let d = cur;
+                cur = (*cur).next;
+                drop(Box::from_raw(d));
+            }
+        }
+    }
+}
 
+#[allow(dead_code)]
 impl<K, V> LruCache<K, V>
-    where K: Hash + Eq + Copy {
+where
+    K: Hash + Eq + Copy,
+{
     fn new(cap: usize) -> Self {
         LruCache {
             data: HashMap::new(),
@@ -38,19 +55,24 @@ impl<K, V> LruCache<K, V>
     fn size(&self) -> usize {
         self.data.len()
     }
+
     fn get(&mut self, k: &K) -> Option<&V> {
-        if !self.data.contains_key(k) { return None; };
+        if !self.data.contains_key(k) {
+            return None;
+        };
         // let x = self.data.get(k).unwrap();
         let x = *self.data.get(k).unwrap();
         unsafe {
-            self.moveToLast(x);
+            self.move_to_last(x);
             let r = Some(&(*x).v);
             return r;
         }
     }
 
     fn print(&self)
-        where K: Debug, V: Debug
+    where
+        K: Debug,
+        V: Debug,
     {
         let mut cur = self.head;
         while !cur.is_null() {
@@ -61,13 +83,22 @@ impl<K, V> LruCache<K, V>
         }
     }
 
-    unsafe fn moveToLast(&mut self, entry: *mut Entry<K, V>) where K: Eq + Hash {
-        if self.tail.is_null() { return; }
+    unsafe fn move_to_last(&mut self, entry: *mut Entry<K, V>)
+    where
+        K: Eq + Hash,
+    {
+        if self.tail.is_null() {
+            return;
+        }
         let e = entry.read();
         let pre = e.pre;
         let next = e.next;
-        if !pre.is_null() { (*pre).next = next; }
-        if !next.is_null() { (*next).pre = pre; }
+        if !pre.is_null() {
+            (*pre).next = next;
+        }
+        if !next.is_null() {
+            (*next).pre = pre;
+        }
         if self.head == entry {
             self.head = next
         }
@@ -82,37 +113,37 @@ impl<K, V> LruCache<K, V>
             let entry = *self.data.get(&k).unwrap();
             unsafe {
                 (*entry).v = v;
-                self.moveToLast(entry);
+                self.move_to_last(entry);
                 return;
             }
         };
         unsafe {
             if self.data.len() == self.cap {
-                let newEntry = self.evict();
-                self.data.remove(&(*newEntry).k);
-                drop(Box::from_raw(newEntry));
+                let new_entry = self.evict();
+                self.data.remove(&(*new_entry).k);
+                drop(Box::from_raw(new_entry));
             }
-            let newEntry = Box::into_raw(Box::new(Entry {
+            let new_entry = Box::into_raw(Box::new(Entry {
                 pre: null_mut(),
                 next: null_mut(),
                 k,
                 v,
             }));
-            self.addNewEntry(newEntry);
-            self.data.insert(k, newEntry);
+            self.add_new_entry(new_entry);
+            self.data.insert(k, new_entry);
         }
     }
 
-    unsafe fn addNewEntry(&mut self, newEntry: *mut Entry<K, V>) {
+    unsafe fn add_new_entry(&mut self, new_entry: *mut Entry<K, V>) {
         if self.data.len() == 0 {
-            self.head = newEntry;
-            self.tail = newEntry;
+            self.head = new_entry;
+            self.tail = new_entry;
             return;
         };
-        (*self.tail).next = newEntry;
-        (*newEntry).pre = self.tail;
-        (*newEntry).next = null_mut();
-        self.tail = newEntry;
+        (*self.tail).next = new_entry;
+        (*new_entry).pre = self.tail;
+        (*new_entry).next = null_mut();
+        self.tail = new_entry;
     }
 
     unsafe fn evict(&mut self) -> *mut Entry<K, V> {
@@ -127,13 +158,12 @@ impl<K, V> LruCache<K, V>
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use crate::common::cache::lru::LruCache;
 
     #[test]
-    fn f1() {
+    fn lru_f1() {
         let mut cache = LruCache::new(10);
         cache.put("2", 1);
         cache.put("3", 2);
@@ -141,7 +171,7 @@ mod test {
     }
 
     #[test]
-    fn f2() {
+    fn lru_f2() {
         let mut cache = LruCache::new(3);
         cache.put("2", 1);
         cache.put("3", 2);
@@ -150,7 +180,7 @@ mod test {
     }
 
     #[test]
-    fn f3() {
+    fn lru_f3() {
         let mut cache = LruCache::new(3);
         cache.put("2", 1);
         cache.put("3", 2);
@@ -160,7 +190,7 @@ mod test {
     }
 
     #[test]
-    fn f4() {
+    fn lru_f4() {
         let mut cache = LruCache::new(3);
         cache.put("2", 1);
         cache.print();
