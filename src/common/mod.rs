@@ -5,3 +5,4 @@ mod simd;
 mod heap;
 
 mod tree;
+mod cache;

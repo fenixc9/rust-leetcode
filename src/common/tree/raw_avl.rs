@@ -78,8 +78,7 @@ impl<T: Ord + Copy + Debug> AvlTree<T> {
         }
         unsafe {
             let n = node.read();
-            if n.data > t { (*node).left = Self::insert0(n.left, t) }
-            else if n.data < t { (*node).right = Self::insert0(n.right, t) }
+            if n.data > t { (*node).left = Self::insert0(n.left, t) } else if n.data < t { (*node).right = Self::insert0(n.right, t) }
             (*node).height = max(Self::height(n.left), Self::height(n.right));
             let bf = Self::bf(node);
             if bf > 1 && t < (*n.left).data { return Self::right_rotate(node); }
@@ -109,7 +108,7 @@ impl<T: Ord + Copy + Debug> AvlTree<T> {
     unsafe fn left_rotate(n: *mut Node<T>) -> *mut Node<T> {
         let mut b = (*n).right;
         if b.is_null() { panic!("咋回事啊"); }
-        let mut T3 = (*b).left;
+        let T3 = (*b).left;
         std::ptr::swap(b, T3);
 
         let bnode = b.read();
@@ -123,8 +122,8 @@ impl<T: Ord + Copy + Debug> AvlTree<T> {
     unsafe fn right_rotate(n: *mut Node<T>) -> *mut Node<T> {
         let mut b = (*n).left;
         if b.is_null() { panic!("咋回事啊"); }
-        let mut T3 = (*b).right;
-        std::ptr::swap(b, T3);
+        let t3 = (*b).right;
+        std::ptr::swap(b, t3);
 
         let bnode = b.read();
         let node = n.read();
@@ -133,6 +132,18 @@ impl<T: Ord + Copy + Debug> AvlTree<T> {
         (*b).height = max(Self::height(bnode.left), Self::height(bnode.right));
 
         return b;
+    }
+
+    pub fn traversal(&self) {
+        unsafe { Self::t(self.root) }
+    }
+
+    unsafe fn t(cur: *mut Node<T>) {
+        if cur.is_null() { return; }
+        let node = cur.read();
+        Self::t(node.left);
+        println!("{:?}",node.data);
+        Self::t(node.right);
     }
 }
 
@@ -146,8 +157,12 @@ mod test {
         tree.insert(2);
         tree.insert(3);
         tree.insert(1);
+        tree.insert(6);
+        tree.insert(4);
+        tree.insert(8);
 
-        tree.display();
+        tree.traversal();
+        // tree.display();
     }
 }
 
