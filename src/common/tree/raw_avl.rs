@@ -1,7 +1,7 @@
 use std::cmp::max;
 use std::fmt::Debug;
 use std::ptr::null_mut;
-
+#[allow(dead_code)]
 struct Node<T> {
     data: T,
     height: i32,
@@ -9,6 +9,7 @@ struct Node<T> {
     right: *mut Node<T>,
 }
 
+#[allow(dead_code)]
 impl<T> Node<T> {
     fn new(t: T) -> Self {
         Node {
@@ -20,6 +21,7 @@ impl<T> Node<T> {
     }
 }
 
+#[allow(dead_code)]
 impl<T: Ord + Debug> Node<T> {
     fn display(&self) {
         let mut m = String::new();
@@ -48,10 +50,12 @@ impl<T: Ord + Debug> Node<T> {
     }
 }
 
+#[allow(dead_code)]
 struct AvlTree<T> {
     root: *mut Node<T>,
 }
 
+#[allow(dead_code)]
 impl<T: Ord + Copy + Debug> AvlTree<T> {
     fn display(&self) {
         unsafe {

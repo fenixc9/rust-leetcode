@@ -1,17 +1,16 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::ptr::null_mut;
+use std::ptr::{drop_in_place, null_mut};
 
-struct Entry<K, V> {
+pub struct Entry<K, V> {
     pre: *mut Entry<K, V>,
     next: *mut Entry<K, V>,
     k: K,
     v: V,
 }
 
-
-struct LruCache<K, V>
+pub struct LruCache<K, V>
 where
     K: Hash + Eq + Copy,
 {
@@ -32,7 +31,8 @@ where
                 self.data.remove(&(*cur).k);
                 let d = cur;
                 cur = (*cur).next;
-                drop(Box::from_raw(d));
+                // drop(Box::from_raw(d));
+                drop_in_place(d);
             }
         }
     }
@@ -43,7 +43,7 @@ impl<K, V> LruCache<K, V>
 where
     K: Hash + Eq + Copy,
 {
-    fn new(cap: usize) -> Self {
+    pub fn new(cap: usize) -> Self {
         LruCache {
             data: HashMap::new(),
             head: null_mut(),
@@ -52,24 +52,22 @@ where
         }
     }
 
-    fn size(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.data.len()
     }
 
-    fn get(&mut self, k: &K) -> Option<&V> {
+    pub fn get(&mut self, k: &K) -> Option<&V> {
         if !self.data.contains_key(k) {
             return None;
         };
-        // let x = self.data.get(k).unwrap();
-        let x = *self.data.get(k).unwrap();
+        let r = *self.data.get(k).unwrap();
         unsafe {
-            self.move_to_last(x);
-            let r = Some(&(*x).v);
-            return r;
+            self.move_to_last(r);
+            return Some(&(*r).v);
         }
     }
 
-    fn print(&self)
+    pub fn print(&self)
     where
         K: Debug,
         V: Debug,
@@ -82,6 +80,8 @@ where
             }
         }
     }
+
+    // mut版
 
     unsafe fn move_to_last(&mut self, entry: *mut Entry<K, V>)
     where
@@ -108,7 +108,33 @@ where
         self.tail = entry;
     }
 
-    fn put(&mut self, k: K, v: V) {
+    // swap版
+    // unsafe fn move_to_last(& mut self, entry: *mut Entry<K, V>)
+    // where
+    //     K: Eq + Hash,
+    // {
+    //     if self.tail.is_null() {
+    //         return;
+    //     }
+    //     let e = entry.read();
+    //     let pre = e.pre;
+    //     let next = e.next;
+    //     if !pre.is_null() {
+    //         (*pre).next = next;
+    //     }
+    //     if !next.is_null() {
+    //         (*next).pre = pre;
+    //     }
+    //     if self.head == entry {
+    //         self.head = ne
+    //     }
+    //     (*self.tail).next = entry;
+    //     (*entry).pre = self.tail;
+    //     (*entry).next = std::ptr::null_mut();
+    //     self.tail.swap(entry);
+    // }
+
+    pub fn put(&mut self, k: K, v: V) {
         if self.data.contains_key(&k) {
             let entry = *self.data.get(&k).unwrap();
             unsafe {
@@ -164,10 +190,13 @@ mod test {
 
     #[test]
     fn lru_f1() {
-        let mut cache = LruCache::new(10);
+        let mut cache = LruCache::new(3);
         cache.put("2", 1);
         cache.put("3", 2);
-        assert_eq!(cache.size(), 2);
+        cache.put("4", 2);
+        cache.put("5", 2);
+        cache.put("7", 2);
+        assert_eq!(cache.size(), 3);
     }
 
     #[test]
